@@ -73,3 +73,34 @@ FROM results AS r
 JOIN top_customers AS t_c
 ON r.fullname = t_c.fullname
 ORDER BY fullname, pay_mon;
+
+/*
+Question 4
+ Write a query to find the top 10 buyers in the first accounted month
+*/
+
+/*
+The query below is used to find the first accounted month
+
+SELECT DATE_TRUNC('month', MIN(payment_date))
+FROM payment
+
+*/
+
+/*
+The query below lists the top 10 buyers
+*/
+WITH first_buyers AS( SELECT c.first_name||' '||c.last_name AS full_name,
+       COUNT(*) AS payment_count,
+       SUM(pt.amount) AS total_amt
+FROM customer AS c
+JOIN payment pt
+ON c.customer_id = pt.customer_id
+WHERE pt.payment_date BETWEEN '2007-02-01' AND '2007-02-27'
+GROUP BY 1)
+
+SELECT full_name , payment_count ,total_amt
+FROM first_buyers
+GROUP BY 1, 2, 3 
+ORDER BY 3 DESC
+LIMIT 10;
