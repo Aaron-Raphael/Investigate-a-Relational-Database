@@ -39,3 +39,37 @@ JOIN staff AS s
 ON r.staff_id = s.staff_id
 GROUP BY 1,2,3
 ORDER BY 4 DESC
+
+/*
+Question 3
+ We would like to know who were our top 10 paying customers, 
+ how many payments they made on a monthly basis during 2007 and 
+ what was the amount of the monthly payments. 
+ Can you write a query to capture the customer name, 
+ month and year of payment and 
+ total payment amount for each month by these top 10 paying customers?
+*/
+
+WITH top_customers AS(SELECT p.customer_id, 
+                (c.first_name||' '||c.last_name) AS fullname, 
+                SUM(p.amount) AS pay_amount
+                FROM payment p
+                JOIN customer c
+                ON p.customer_id = c.customer_id
+                GROUP BY 1, 2
+                ORDER BY 3 DESC
+                LIMIT 10),
+     results AS (SELECT DATE_TRUNC('month',p.payment_date) AS pay_mon,
+                c.first_name || ' ' || c.last_name AS fullname,
+          		COUNT(*) AS pay_counterpermon, SUM(p.amount) AS pay_amount
+          		FROM PAYMENT AS p
+          		JOIN CUSTOMER AS c
+          		ON p.customer_id = c.customer_id
+          		WHERE DATE_TRUNC('month',p. payment_date) > '2007-01-01'
+          		GROUP BY 1,2
+          		ORDER BY fullname)
+SELECT r.pay_mon, t_c.fullname, r.pay_counterpermon, r.pay_amount
+FROM results AS r
+JOIN top_customers AS t_c
+ON r.fullname = t_c.fullname
+ORDER BY fullname, pay_mon;
